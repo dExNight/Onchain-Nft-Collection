@@ -36,25 +36,22 @@ export type MainConfig = {
 };
 
 export async function onchainCollectionContentToCell(content: OnchainCollectionContent): Promise<Cell> {
-    let metadata = Dictionary.empty(Dictionary.Keys.Buffer(32), NFTDictValueSerializer);
+    const metadata: Record<string, { content: Buffer }> = {
+        image: { content: Buffer.from(content.image) },
+        name: { content: Buffer.from(content.name) },
+        description: { content: Buffer.from(content.description) },
+        social_links: { content: Buffer.from(JSON.stringify(content.social_links)) },
+    };
 
-    const image_hash: Buffer = await sha256('image');
-    metadata = metadata.set(image_hash, { content: Buffer.from(content.image) });
+    const metadataDict = await Object.entries(metadata).reduce(
+        async (dict, [key, value]) => {
+            const keyHash = await sha256(key);
+            return (await dict).set(keyHash, value);
+        },
+        Promise.resolve(Dictionary.empty(Dictionary.Keys.Buffer(32), NFTDictValueSerializer)),
+    );
 
-    const name_hash: Buffer = await sha256('name');
-    metadata = metadata.set(name_hash, { content: Buffer.from(content.name) });
-
-    const description_hash: Buffer = await sha256('description');
-    metadata = metadata.set(description_hash, { content: Buffer.from(content.description) });
-
-    if (content.social_links) {
-        const social_links_hash: Buffer = await sha256('social_links');
-        metadata = metadata.set(social_links_hash, { content: Buffer.from(JSON.stringify(content.social_links)) });
-    }
-
-    const onchain_data: Cell = beginCell().storeUint(ONCHAIN_CONTENT_PREFIX, 8).storeDict(metadata).endCell();
-
-    return onchain_data;
+    return beginCell().storeUint(ONCHAIN_CONTENT_PREFIX, 8).storeDict(metadataDict).endCell();
 }
 
 export function royaltyParamsToCell(params: RoyaltyParams): Cell {
