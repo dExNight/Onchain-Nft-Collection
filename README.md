@@ -35,3 +35,7 @@ cell get_nft_content(int index, cell individual_nft_content) method_id {
     return (individual_nft_content);
 }
 ```
+
+## References
+
+Read more about metadata processing: https://docs.ton.org/develop/dapps/asset-processing/metadata
