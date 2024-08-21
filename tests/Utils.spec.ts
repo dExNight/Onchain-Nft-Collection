@@ -1,18 +1,13 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, Dictionary, Slice, toNano } from '@ton/core';
 import '@ton/test-utils';
-import { compile } from '@ton/blueprint';
-import { flattenSnakeCell, makeSnakeCell } from '../utils/onchainContentUtils';
+import { makeSnakeCell } from '../utils/onchainContentUtils';
 import { NFTDictValueSerializer } from '../utils/serializers';
 import { sha256 } from 'ton-crypto';
 
 const SNAKE_CELL_PREFIX: number = 0x00;
 
-describe('A', () => {
-    let code: Cell;
-
-    beforeAll(async () => {});
-
+describe('utils', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
 
