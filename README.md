@@ -12,8 +12,13 @@ This project aims to show TON developer how to create NFT collection with **on-c
 ## Important notes
 
 ### `makeSnakeCell` and `flattenSnakeCell` possible replacement
-In `@ton/core` there are functions for **Builder** and **Slice**: `loadStringTail` and `storeStringTail`.
-They can be used to serialize and deserialize onchain metadata. 
+In `@ton/core` there are functions for **Builder** and **Slice**:
+- `loadStringTail`
+- `storeStringTail`
+
+Since they serialize/deserialize string value in the same way as `makeSnakeCell` and `flattenSnakeCell`, they are interchangeable (if the value to store is string).
+
+**Check tests for detailed usage**
 
 ### Collection contract
 - `get_collection_data` returns content cell that is stored in its storage, not common content (as it is in off-chain metadata)
