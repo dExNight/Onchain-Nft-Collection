@@ -51,7 +51,7 @@ export function makeSnakeCell(data: Buffer): Cell {
         const chunk = chunks[i];
 
         curCell.storeBuffer(chunk);
-        
+
         if (i - 1 >= 0) {
             const nextCell = beginCell();
             nextCell.storeRef(curCell);

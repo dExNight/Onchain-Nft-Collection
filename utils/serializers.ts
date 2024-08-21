@@ -3,6 +3,12 @@ import { flattenSnakeCell, makeSnakeCell, ParseChunkDict, bufferToChunks } from 
 
 const SNAKE_CELL_PREFIX: number = 0x00;
 
+export function stringToSnakeBuffer(str: string): Buffer {
+    const prefixBuffer = Buffer.from([SNAKE_CELL_PREFIX]);
+    const stringBuffer = Buffer.from(str);
+    return Buffer.concat([prefixBuffer, stringBuffer]);
+}
+
 interface ChunkDictValue {
     content: Buffer;
 }

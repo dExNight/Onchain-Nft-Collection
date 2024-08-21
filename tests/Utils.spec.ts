@@ -1,8 +1,8 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { Cell, Dictionary, Slice, toNano } from '@ton/core';
+import { beginCell, Cell, Dictionary, Slice, toNano } from '@ton/core';
 import '@ton/test-utils';
-import { makeSnakeCell } from '../utils/onchainContentUtils';
-import { NFTDictValueSerializer } from '../utils/serializers';
+import { flattenSnakeCell, makeSnakeCell } from '../utils/onchainContentUtils';
+import { NFTDictValueSerializer, stringToSnakeBuffer } from '../utils/serializers';
 import { sha256 } from 'ton-crypto';
 
 const SNAKE_CELL_PREFIX: number = 0x00;
@@ -19,19 +19,15 @@ describe('utils', () => {
         deployer = await blockchain.treasury('deployer');
     });
 
-    it('should pass', async () => {
-        let data = Buffer.from(stringToStore);
-        const snakeCellPrefix = Buffer.from([SNAKE_CELL_PREFIX]);
-        data = Buffer.concat([snakeCellPrefix, data]);
-
-        const snakedCell: Cell = makeSnakeCell(data);
+    it('makeSnakeCell && flattenSnakeCell', async () => {
+        const snakeBuffer = stringToSnakeBuffer(stringToStore);
+        const snakedCell: Cell = makeSnakeCell(snakeBuffer);
         const cs: Slice = snakedCell.beginParse();
 
         const start = cs.loadUint(8);
         if (start === 0) {
-            // const snake = flattenSnakeCell(cs.asCell());
-            // console.log(snake.toString());
-            console.log(cs.loadStringTail());
+            const snake = flattenSnakeCell(cs.asCell());
+            console.log(snake.toString());
         }
 
         let dict = Dictionary.empty(Dictionary.Keys.Buffer(32), NFTDictValueSerializer);
@@ -42,7 +38,39 @@ describe('utils', () => {
             dict = dict.set(dictKey, { content: Buffer.from(stringToStore) });
         }
 
-        console.log(dict.size);
-        console.log(dict.get(await sha256('image'))?.content.toString());
+        expect(dict.get(await sha256('image'))?.content.toString()).toEqual(stringToStore);
+    });
+
+    it('makeSnakeCell && loadStringTail', async () => {
+        const snakeBuffer = stringToSnakeBuffer(stringToStore);
+        const snakedCell: Cell = makeSnakeCell(snakeBuffer);
+
+        const cs: Slice = snakedCell.beginParse();
+
+        const start = cs.loadUint(8);
+        if (start === 0) {
+            expect(cs.loadStringTail()).toEqual(stringToStore);
+        }
+    });
+
+    it('storeStringTail && loadStringTail', async () => {
+        const snakedCell: Cell = beginCell().storeUint(0, 8).storeStringTail(stringToStore).endCell();
+        const cs: Slice = snakedCell.beginParse();
+
+        const start = cs.loadUint(8);
+        if (start === 0) {
+            expect(cs.loadStringTail()).toEqual(stringToStore);
+        }
+    });
+
+    it('storeStringTail && flattenSnakeCell', async () => {
+        const snakedCell: Cell = beginCell().storeUint(0, 8).storeStringTail(stringToStore).endCell();
+        const cs: Slice = snakedCell.beginParse();
+
+        const start = cs.loadUint(8);
+        if (start === 0) {
+            const snake = flattenSnakeCell(cs.asCell());
+            expect(snake.toString()).toEqual(stringToStore);
+        }
     });
 });
