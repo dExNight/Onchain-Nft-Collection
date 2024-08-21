@@ -1,4 +1,4 @@
-import { Address, Dictionary, Slice, toNano } from '@ton/core';
+import { Address, toNano } from '@ton/core';
 import { NFT_Collection } from '../wrappers/NFT_Collection';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
@@ -8,7 +8,7 @@ const metadata = {
     image: 'https://cryptorelax.org/wp-content/uploads/2021/07/chto_takoe_nft.png',
     name: 'Cube',
     description: 'Cube is a simple shape',
-    social_links: ['https://t.me/dExNight'],
+    social_links: ['https://t.me/dex_night'],
 };
 
 export async function run(provider: NetworkProvider) {

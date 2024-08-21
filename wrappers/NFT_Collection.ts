@@ -1,14 +1,4 @@
-import {
-    Address,
-    beginCell,
-    Cell,
-    Contract,
-    contractAddress,
-    ContractProvider,
-    Dictionary,
-    Sender,
-    SendMode,
-} from '@ton/core';
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Dictionary, Sender, SendMode, TupleBuilder } from '@ton/core';
 import { sha256 } from 'ton-crypto';
 import { NFTDictValueSerializer } from '../utils/serializers';
 
@@ -27,7 +17,7 @@ export type RoyaltyParams = {
     destination_address: Address;
 };
 
-export type MainConfig = {
+export type CollectionConfig = {
     owner_address: Address;
     next_item_index: number;
     collection_content: OnchainCollectionContent;
@@ -62,7 +52,7 @@ export function royaltyParamsToCell(params: RoyaltyParams): Cell {
         .endCell();
 }
 
-export async function mainConfigToCell(config: MainConfig): Promise<Cell> {
+export async function mainConfigToCell(config: CollectionConfig): Promise<Cell> {
     let contentCell = await onchainCollectionContentToCell(config.collection_content);
 
     const royaltyCell = royaltyParamsToCell(config.royalty_params);
@@ -86,7 +76,7 @@ export class NFT_Collection implements Contract {
         return new NFT_Collection(address);
     }
 
-    static async createFromConfig(config: MainConfig, code: Cell, workchain = 0) {
+    static async createFromConfig(config: CollectionConfig, code: Cell, workchain = 0) {
         const data = await mainConfigToCell(config);
         const init = { code, data };
         return new NFT_Collection(contractAddress(workchain, init), init);
@@ -135,6 +125,17 @@ export class NFT_Collection implements Contract {
             next_item_index: result.readNumber(),
             content: result.readCell(),
             owner_address: result.readAddress(),
+        };
+    }
+
+    async getNftContent(provider: ContractProvider, index: number, individual_nft_content: Cell) {
+        const tupleBuilder = new TupleBuilder();
+        tupleBuilder.writeNumber(index);
+        tupleBuilder.writeCell(individual_nft_content);
+
+        const result = (await provider.get('get_nft_content', tupleBuilder.build())).stack;
+        return {
+            content: result.readCell(),
         };
     }
 }
