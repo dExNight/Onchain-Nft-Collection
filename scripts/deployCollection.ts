@@ -4,10 +4,11 @@ import { compile, NetworkProvider } from '@ton/blueprint';
 
 const OWNER_ADDRESS: Address = Address.parse('0QAAeHjRVfqPfRIjkPlxcv-OAffJUfAxWSu6RFli4FUeUCRn');
 
-const metadata: Record<string, string> = {
+const metadata = {
     image: 'https://cryptorelax.org/wp-content/uploads/2021/07/chto_takoe_nft.png',
     name: 'Cube',
     description: 'Cube is a simple shape',
+    social_links: ['https://t.me/dExNight'],
 };
 
 export async function run(provider: NetworkProvider) {
@@ -16,7 +17,7 @@ export async function run(provider: NetworkProvider) {
             {
                 owner_address: OWNER_ADDRESS,
                 next_item_index: 0,
-                collection_content: { metadata: metadata },
+                collection_content: metadata,
                 nft_item_code: await compile('NFT_Item'),
                 royalty_params: {
                     numerator: 20,

@@ -15,7 +15,10 @@ import { NFTDictValueSerializer } from '../utils/serializers';
 const ONCHAIN_CONTENT_PREFIX = 0x00;
 
 export type OnchainCollectionContent = {
-    metadata: Record<string, string>;
+    image: string;
+    name: string;
+    description: string;
+    social_links: string[] | null;
 };
 
 export type RoyaltyParams = {
@@ -33,12 +36,20 @@ export type MainConfig = {
 };
 
 export async function onchainCollectionContentToCell(content: OnchainCollectionContent): Promise<Cell> {
-    const metadata_dictionary: Record<string, string> = content.metadata;
     let metadata = Dictionary.empty(Dictionary.Keys.Buffer(32), NFTDictValueSerializer);
 
-    for (const key in metadata_dictionary) {
-        const key_hash: Buffer = await sha256(key);
-        metadata = metadata.set(key_hash, { content: Buffer.from(metadata_dictionary[key]) });
+    const image_hash: Buffer = await sha256('image');
+    metadata = metadata.set(image_hash, { content: Buffer.from(content.image) });
+
+    const name_hash: Buffer = await sha256('name');
+    metadata = metadata.set(name_hash, { content: Buffer.from(content.name) });
+
+    const description_hash: Buffer = await sha256('description');
+    metadata = metadata.set(description_hash, { content: Buffer.from(content.description) });
+
+    if (content.social_links) {
+        const social_links_hash: Buffer = await sha256('social_links');
+        metadata = metadata.set(social_links_hash, { content: Buffer.from(JSON.stringify(content.social_links)) });
     }
 
     const onchain_data: Cell = beginCell().storeUint(ONCHAIN_CONTENT_PREFIX, 8).storeDict(metadata).endCell();
